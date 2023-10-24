@@ -1,15 +1,27 @@
 import os
-from sys import argv, exit
+from sys import argv, exit, stdin
 from random import randint, uniform
 from time import time
-from msvcrt import getch
+try:
+	from msvcrt import getch
+	def press_any_key_to_continue():
+		while kbhit():
+			getch()
+		getch()
+except:
+	def press_any_key_to_continue():
+		tmp = input()
+		if tmp:
+			return bytes(tmp[0], encoding = "utf-8")
+		else:
+			return b"\n"
 try:
 	from numpy import all as np_all, any as np_any, argsort, array, c_, in1d, load, r_, save, savetxt, unique, where
 	__import__("numpy").set_printoptions(suppress = True) # just use once
 except Exception as e:
 	print(e)
 	print("Please correctly install numpy library first and press any key to exit. ")
-	getch()
+	press_any_key_to_continue()
 	exit(-1)
 try:
 	from matplotlib import pyplot as plt
@@ -29,7 +41,10 @@ try:
 	isTqdmAvailable = True
 except: # just an extension function
 	isTqdmAvailable = False
-os.chdir(os.path.abspath(os.path.dirname(__file__))) # cd into current folder
+try:
+	os.chdir(os.path.abspath(os.path.dirname(__file__))) # cd into current folder
+except:
+	pass
 EXIT_SUCCESS = 0
 EXIT_FAILURE = 1
 EOF = (-1)
@@ -99,7 +114,7 @@ def buildGrid(xGridCnt, yGridCnt,  gridNumpyFp = gridNumpyFilepathFormat.format(
 	data = readSource()
 	if data is None:
 		print("Error reading sources, please press any key to exit. ")
-		getch()
+		press_any_key_to_continue()
 		return None, None
 	
 	# grid indexing #
@@ -179,7 +194,7 @@ def handleInputData(xGridCount = 100, yGridCount = 100) -> tuple:
 		data, gridDicts = buildGrid(xGridCount, yGridCount, gridNumpyFp = gridNumpyFilepath, gridDictionaryFp = gridDictionaryFilepath)
 	if data is None or gridDicts is None:
 		print("Error building or indexing grids, please press any key to exit. ")
-		getch()
+		press_any_key_to_continue()
 		return False, None, None
 	else:
 		return True, data, gridDicts
@@ -265,7 +280,7 @@ def searchKNNSet(data, gridDicts, q, k, numpyGrade = 2, isPrint = False) -> arra
 		offsets = global_offsets[depth] + idx
 		offsets = offsets[where((0 <= offsets[:, 0] ) & (offsets[:, 0] < gridDicts["xGridCount"]) & (0 <= offsets[:, 1]) & (offsets[:, 1] < gridDicts["yGridCount"]))]
 		#print(global_offsets[depth], idx, offsets, sep = "\n") # for debug
-		#getch() # for debug
+		#press_any_key_to_continue() # for debug
 
 		if 3 == numpyGrade: # whole grid
 			#gridList = data[np_any(np_all(data[:, None, 3:] == offsets, axis = 2), axis = 1)]
@@ -303,7 +318,7 @@ def searchKNNSet(data, gridDicts, q, k, numpyGrade = 2, isPrint = False) -> arra
 					dy = 0 if loc["up"] <= q[0] <= loc["down"] else min(abs(loc["up"] - q[0]), abs(loc["down"] - q[0]))
 					d = (dx ** 2 + dy ** 2) ** (1 / 2)
 					#print("depth = {0}, len(kNNSet.lists) = {1}, k = {2}, d = {3}, t = {4}. ".format(depth, len(kNNSet.lists), k, d, kNNSet.t)) # for debug
-					#getch()
+					#press_any_key_to_continue()
 					if d >= kNNSet.t: # no nearer points in the cell since the distance to cell is not smaller than t
 						flags.append(False) # ignore the cell
 					else: # prune
@@ -314,7 +329,7 @@ def searchKNNSet(data, gridDicts, q, k, numpyGrade = 2, isPrint = False) -> arra
 							gridList = data[where((data[:, 3] == cell[0]) & (data[:, 4] == cell[1]))]
 							kNNSet.update(c_[gridList[:, :3], ((gridList[:, 0] - q[0]) ** 2 + (gridList[:, 1] - q[1]) ** 2) ** (1 / 2)])
 			#print(depth, len(offsets), flags) # for debug
-			#getch()
+			#press_any_key_to_continue()
 			if not any(flags): # Finished
 				break
 		elif 0 == numpyGrade: # per point
@@ -335,7 +350,7 @@ def searchKNNSet(data, gridDicts, q, k, numpyGrade = 2, isPrint = False) -> arra
 					dy = 0 if loc["up"] <= q[0] <= loc["down"] else min(abs(loc["up"] - q[0]), abs(loc["down"] - q[0]))
 					d = (dx ** 2 + dy ** 2) ** (1 / 2)
 					#print("depth = {0}, len(kNNSet.lists) = {1}, k = {2}, d = {3}, t = {4}. ".format(depth, len(kNNSet.lists), k, d, kNNSet.t)) # for debug
-					#getch()
+					#press_any_key_to_continue()
 					if d >= kNNSet.t: # no nearer points in the cell since the distance to cell is not smaller than t
 						flags.append(False) # ignore the cell
 					else: # prune
@@ -347,7 +362,7 @@ def searchKNNSet(data, gridDicts, q, k, numpyGrade = 2, isPrint = False) -> arra
 							for line in gridList.tolist():
 								kNNSet.update(array(line[:3] + [((line[0] - q[0]) ** 2 + (line[1] - q[1]) ** 2) ** (1 / 2)], dtype = "float64").reshape(1, 4))
 			#print(depth, len(offsets), flags) # for debug
-			#getch()
+			#press_any_key_to_continue()
 			if not any(flags): # Finished
 				break
 
@@ -581,7 +596,7 @@ def main() -> int:
 	#print(getLocationsFromCell(9999, gridDicts)) # for debug
 	#linearSearch(data, gridDicts, (42.21245899, -104.81922482), 200, isPrint = True) # for debug
 	#searchKNNSet(data, gridDicts, (42.21245899, -104.81922482), 200, isPrint = True) # for debug
-	#getch() # for  debug
+	#press_any_key_to_continue() # for  debug
 	
 	qs = [(uniform(gridDicts["min_latitude"], gridDicts["max_latitude"]), uniform(gridDicts["min_longitude"], gridDicts["max_longitude"])) for _ in range(N)]
 	ks = [randint(1, gridDicts["pointCnt"] if maxK is None else maxK) for _ in range(N)]
@@ -593,7 +608,7 @@ def main() -> int:
 		numpyGrade = 2
 	doKNNSearch(data, gridDicts, qs, ks, useMethod = 0, numpyGrade = numpyGrade, isPrint = False)
 	print("\nPlease press any key to exit. ")
-	getch()
+	press_any_key_to_continue()
 	return EXIT_SUCCESS
 
 
