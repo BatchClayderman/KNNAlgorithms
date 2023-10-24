@@ -433,7 +433,7 @@ def doKNNSearch(data, gridDicts, qs, ks, useMethod = 0, numpyGrade = 2, outputFi
 
 def printHelp() -> None:
 	print("Python script for finding the top k nearest neighbors of q. ", end = "\n\n")
-	print("Options: ")
+	print("Option: ")
 	print("\t[/q|-q|q]: Specify that the following two options are the latitude and longitude of q. ")
 	print("\t[/k|-k|k]: Specify that the following option is the value of k. ")
 	print("\t[/g|-g|g]: Specify that the following option is the grid among 50, 100 (default), and 200. ")
