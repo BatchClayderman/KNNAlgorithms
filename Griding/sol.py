@@ -456,7 +456,7 @@ def parseCommandline(argv):
 	if len(argv) < 2:
 		return None
 	for arg in argv[1:]:
-		if arg.lower() in ("/h", "-h", "/help", "--help"):
+		if arg.lower() in ("/h", "-h", "h", "/help", "--help", "help", "/?", "-?", "?"):
 			printHelp()
 			return True
 	commandlineDict = {}
