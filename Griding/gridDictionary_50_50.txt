@@ -1,9 +1,0 @@
-max_latitude	90.0
-min_latitude	-90.0
-max_longitude	177.462490797
-min_longitude	-176.30859375
-distance_latitude	3.6
-distance_longitude	7.07542169094
-xGridCount	50
-yGridCount	50
-pointCnt	1281253
