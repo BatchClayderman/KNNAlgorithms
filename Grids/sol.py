@@ -1,5 +1,5 @@
 import os
-from sys import argv, exit, stdin
+from sys import argv, exit
 from random import randint, uniform
 from time import time
 try:
