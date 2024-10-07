@@ -4,19 +4,26 @@ from time import sleep
 try:
 	from numpy import array
 	from matplotlib import pyplot as plt
-	def plotCoords(coords, dpi  = 1200, plotFp = None) -> None:
+	def plotCoords(coords:list, dpi:int = 1200, plotFp:str = None) -> None:
 		coords_array = array(coords)
+		plt.rcParams["figure.dpi"] = 300
+		plt.rcParams["savefig.dpi"] = 300
 		plt.scatter(coords_array[:, 0], coords_array[:, 1], marker = ".", color = "orange")
 		plt.rcParams["figure.dpi"] = dpi
 		plt.rcParams["savefig.dpi"] = dpi
-		if plotFp is None:
-			plt.show()
-		else:
-			plt.savefig(plotFp)
+		try:
+			if plotFp is None:
+				plt.show()
+			else:
+				plt.savefig(plotFp)
+		except KeyboardInterrupt:
+			print("Ploting procedures are interrupted by users. ")
+		except BaseException as e:
+			print("Exceptions occurred. Details are as follows. \n{0}".format(e))
 		plt.close()
-	def plotFundamentalMBRs(MBRs, dpi  = 1200, plotFp = None) -> None:
-		plt.rcParams["figure.dpi"] = dpi
-		plt.rcParams["savefig.dpi"] = dpi
+	def plotFundamentalMBRs(MBRs:list, dpi:int = 1200, plotFp:str = None) -> None:
+		plt.rcParams["figure.dpi"] = 300
+		plt.rcParams["savefig.dpi"] = 300
 		fig, ax = plt.subplots()
 		for mbr in MBRs:
 			x_low, x_high, y_low, y_high = mbr
@@ -24,12 +31,19 @@ try:
 			ax.add_patch(rect)
 		ax.autoscale()
 		ax.set_aspect("equal", "box")
-		if plotFp is None:
-			plt.show()
-		else:
-			plt.savefig(plotFp)
+		plt.rcParams["figure.dpi"] = dpi
+		plt.rcParams["savefig.dpi"] = dpi
+		try:
+			if plotFp is None:
+				plt.show()
+			else:
+				plt.savefig(plotFp)
+		except KeyboardInterrupt:
+			print("Ploting procedures are interrupted by users. ")
+		except BaseException as e:
+			print("Exceptions occurred. Details are as follows. \n{0}".format(e))
 		plt.close()
-	def plotMBRs(MBRs, dpi  = 1200, plotFp = None) -> None:
+	def plotMBRs(MBRs:list, dpi:int = 1200, plotFp:str = None) -> None:
 		colors = ["red", "orange", "green", "blue", "black"]
 		plt.rcParams["figure.dpi"] = dpi
 		plt.rcParams["savefig.dpi"] = dpi
@@ -41,15 +55,22 @@ try:
 			ax.add_patch(rect)
 		ax.autoscale()
 		ax.set_aspect("equal", "box")
-		if plotFp is None:
-			plt.show()
-		else:
-			plt.savefig(plotFp)
+		try:
+			if plotFp is None:
+				plt.show()
+			else:
+				plt.savefig(plotFp)
+		except KeyboardInterrupt:
+			print("Ploting procedures are interrupted by users. ")
+		except BaseException as e:
+			print("Exceptions occurred. Details are as follows. \n{0}".format(e))
 		plt.close()
 except:
-	def plotCoords(coords, dpi = 1200, plotFp = None) -> None:
+	def plotCoords(coords:list, dpi:int = 1200, plotFp:str = None) -> None:
 		return None
-	def plotFundamentalMBRs(MBRs, dpi = 1200, plotFp = None) -> None:
+	def plotFundamentalMBRs(MBRs:list, dpi:int = 1200, plotFp:str = None) -> None:
+		return None
+	def plotMBRs(MBRs:list, dpi:int = 1200, plotFp:str = None) -> None:
 		return None
 try:
 	os.chdir(os.path.abspath(os.path.dirname(__file__))) # cd into the location path of this script
@@ -63,14 +84,14 @@ defaultTime = 5
 coordsFilepath = "coords.txt"
 offsetsFilepath = "offsets.txt"
 rTreeFilepath = "Rtree.txt"
-plotCoordFilepath = "plotCoord.png"
-plotFundamentalMBRFilepath = "plotFundamentalMBR.png"
-plotMBRFilepath = "plotMBR.png"
+plotCoordFilepath = "plotCoord.pdf"
+plotFundamentalMBRFilepath = "plotFundamentalMBR.pdf"
+plotMBRFilepath = "plotMBR.pdf"
 
 
 # class #
 class RTreeNode:
-	def __init__(self, entries = [], id = 0, MBR = None):
+	def __init__(self:object, entries:list = [], id:int = 0, MBR:list = None):
 		self.entries = entries
 		self.id = id
 		self.MBR = MBR
@@ -82,7 +103,7 @@ class RTreeNode:
 
 
 # get input #
-def getTxt(filepath, index = 0) -> str: # get .txt content
+def getTxt(filepath:str, index:int = 0) -> str: # get .txt content
 	coding = ("utf-8", "gbk", "utf-16") # codings
 	if 0 <= index < len(coding): # in the range
 		try:
@@ -96,7 +117,7 @@ def getTxt(filepath, index = 0) -> str: # get .txt content
 	else:
 		return None # out of range
 
-def getCoords(coordsFp = coordsFilepath) -> list:
+def getCoords(coordsFp:str = coordsFilepath) -> list:
 	content = getTxt(coordsFp)
 	if content is None:
 		return None
@@ -115,7 +136,7 @@ def getCoords(coordsFp = coordsFilepath) -> list:
 			print("Line {0} has been skipped since the count of comma(s) is not 1. ".format(cnt))
 	return coords
 
-def getOffsets(offsetsFp = offsetsFilepath) -> list:
+def getOffsets(offsetsFp:str = offsetsFilepath) -> list:
 	content = getTxt(offsetsFp)
 	if content is None:
 		return None
@@ -134,7 +155,7 @@ def getOffsets(offsetsFp = offsetsFilepath) -> list:
 			print("Line {0} has been skipped since the count of comma(s) is not 2. ".format(cnt))
 	return offsets
 
-def checkOffsetCoords(coords, offsets) -> bool:
+def checkOffsetCoords(coords:list, offsets:list) -> bool:
 	if offsets:
 		for i in range(len(offsets) - 1):
 			if offsets[i + 1][1] - offsets[i][2] != 1:
@@ -150,14 +171,14 @@ def checkOffsetCoords(coords, offsets) -> bool:
 		return False
 	return True
 
-def getFundamentalMBR(rTree, fMBRs) -> list:
+def getFundamentalMBR(rTree:RTreeNode|list, fMBRs:list) -> list:
 	if isinstance(rTree, RTreeNode):
 		for entry in rTree.entries:
 			getFundamentalMBR(entry, fMBRs)
 	else:
 		fMBRs.append(rTree[1])
 
-def getMBR(rTree, MBRs, layer = 0) -> list:
+def getMBR(rTree:RTreeNode|list, MBRs:list, layer:int = 0) -> list:
 	if isinstance(rTree, RTreeNode):
 		MBRs.append((rTree.MBR, layer))
 		for entry in rTree.entries:
@@ -167,7 +188,7 @@ def getMBR(rTree, MBRs, layer = 0) -> list:
 
 
 # handle indexing #
-def compute_mbr(coords) -> list: # find the bounds
+def compute_mbr(coords:list) -> list: # find the bounds
 	if coords:
 		x_low = min(coords, key = lambda c:c[0])[0]
 		x_high = max(coords, key = lambda c:c[0])[0]
@@ -177,10 +198,10 @@ def compute_mbr(coords) -> list: # find the bounds
 	else:
 		return None
 
-def compute_geometric_center(coords) -> list: # find the geometric center
+def compute_geometric_center(coords:list) -> list: # find the geometric center
 	return [sum(coord[0] for coord in coords) / len(coords), sum(coord[1] for coord in coords) / len(coords)] if coords else None
 
-def interleave_latlng(lat, lng) -> int: # get code
+def interleave_latlng(lat:float, lng:float) -> int: # get code
 	if not isinstance(lat, float) or not isinstance(lng, float):
 		return None
 	if lng > 180:
@@ -209,7 +230,7 @@ def interleave_latlng(lat, lng) -> int: # get code
 	
 	return int(morton_code)
 
-def buildRTree(entries, min_capacity = 8, max_capacity = 20, level = 0, level_indicator = INDICATOR, isPrint = False) -> RTreeNode:
+def buildRTree(entries:list, min_capacity:int = 8, max_capacity:int = 20, level:int = 0, level_indicator:int = INDICATOR, isPrint:bool = False) -> RTreeNode:
 	if isPrint:
 		print("{0} nodes at level {1}".format(len(entries), level - 1)) # last level
 	if len(entries) <= max_capacity:
@@ -225,7 +246,7 @@ def buildRTree(entries, min_capacity = 8, max_capacity = 20, level = 0, level_in
 			isPrint = True																\
 		)
 
-def computeNodeMBR(nodes) -> list: # find the bounds
+def computeNodeMBR(nodes:list) -> list: # find the bounds
 	if nodes:
 		x_low = min(nodes, key = lambda c:c[0])[0]
 		x_high = max(nodes, key = lambda c:c[1])[1]
@@ -235,7 +256,7 @@ def computeNodeMBR(nodes) -> list: # find the bounds
 	else:
 		return None
 
-def computeRTreeMBR(rTree) -> None:
+def computeRTreeMBR(rTree:RTreeNode) -> None:
 	if isinstance(rTree.entries[0], RTreeNode):
 		for entry in rTree.entries:
 			if entry.MBR is None:
@@ -244,7 +265,7 @@ def computeRTreeMBR(rTree) -> None:
 	else:
 		rTree.MBR = computeNodeMBR([entry[1] for entry in rTree.entries])
 
-def doBuildRTree(entries, min_capacity = 8, max_capacity = 20, level_indicator = INDICATOR) -> RTreeNode:
+def doBuildRTree(entries:list, min_capacity:int = 8, max_capacity:int = 20, level_indicator:int = INDICATOR) -> RTreeNode:
 	if type(entries) != list or len(entries) < 1:
 		return None
 	rTree = buildRTree(entries, min_capacity = min_capacity, max_capacity = max_capacity, level_indicator = level_indicator)
@@ -256,7 +277,7 @@ def doBuildRTree(entries, min_capacity = 8, max_capacity = 20, level_indicator =
 	computeRTreeMBR(rTree)
 	return rTree
 
-def index(coords, offsets) -> list: # build index
+def index(coords:list, offsets:list) -> list: # build index
 	entries = []
 	for offset in offsets:
 		polygon_id, start_offset, end_offset = offset
@@ -275,7 +296,7 @@ def index(coords, offsets) -> list: # build index
 
 
 # make output #
-def dumpRTree(rTree, fp = None) -> None:
+def dumpRTree(rTree:RTreeNode, fp:object = None) -> None:
 	for entry in rTree.entries:
 		if isinstance(entry, RTreeNode):
 			dumpRTree(entry, fp)
@@ -284,7 +305,7 @@ def dumpRTree(rTree, fp = None) -> None:
 	else:
 		print(rTree)
 
-def doDumpRTree(rTree, filepath = rTreeFilepath, encoding = "utf-8") -> bool:
+def doDumpRTree(rTree:RTreeNode, filepath:str = rTreeFilepath, encoding:str = "utf-8") -> bool:
 	if filepath:
 		try:
 			with open(filepath, "w", encoding = encoding) as f:
@@ -299,7 +320,7 @@ def doDumpRTree(rTree, filepath = rTreeFilepath, encoding = "utf-8") -> bool:
 
 
 # main function #
-def preExit(countdownTime = defaultTime) -> None: # we use this function before exiting instead of getch since getch is not OS-independent
+def preExit(countdownTime:int = defaultTime) -> None: # we use this function before exiting instead of getch since getch is not OS-independent
 	try:
 		cntTime = int(countdownTime)
 		length = len(str(cntTime))
