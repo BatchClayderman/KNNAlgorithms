@@ -6,6 +6,7 @@ try:
 	from matplotlib import pyplot as plt
 	def plotCoords(coords:list, dpi:int = 1200, plotFp:str = None) -> None:
 		coords_array = array(coords)
+		plt.rcParams["font.family"] = "Times New Roman"
 		plt.rcParams["figure.dpi"] = 300
 		plt.rcParams["savefig.dpi"] = 300
 		plt.scatter(coords_array[:, 0], coords_array[:, 1], marker = ".", color = "orange")
@@ -15,13 +16,15 @@ try:
 			if plotFp is None:
 				plt.show()
 			else:
-				plt.savefig(plotFp)
+				plt.savefig(plotFp, bbox_inches = "tight")
+				print("Extra Features: Successfully saved the plot of the coords to \"{0}\". ".format(plotFp))
 		except KeyboardInterrupt:
 			print("Ploting procedures are interrupted by users. ")
 		except BaseException as e:
 			print("Exceptions occurred. Details are as follows. \n{0}".format(e))
 		plt.close()
 	def plotFundamentalMBRs(MBRs:list, dpi:int = 1200, plotFp:str = None) -> None:
+		plt.rcParams["font.family"] = "Times New Roman"
 		plt.rcParams["figure.dpi"] = 300
 		plt.rcParams["savefig.dpi"] = 300
 		fig, ax = plt.subplots()
@@ -37,7 +40,8 @@ try:
 			if plotFp is None:
 				plt.show()
 			else:
-				plt.savefig(plotFp)
+				plt.savefig(plotFp, bbox_inches = "tight")
+				print("Extra Features: Successfully saved the plot of the fundamental MBRs to \"{0}\". ".format(plotFp))
 		except KeyboardInterrupt:
 			print("Ploting procedures are interrupted by users. ")
 		except BaseException as e:
@@ -45,6 +49,7 @@ try:
 		plt.close()
 	def plotMBRs(MBRs:list, dpi:int = 1200, plotFp:str = None) -> None:
 		colors = ["red", "orange", "green", "blue", "black"]
+		plt.rcParams["font.family"] = "Times New Roman"
 		plt.rcParams["figure.dpi"] = dpi
 		plt.rcParams["savefig.dpi"] = dpi
 		fig, ax = plt.subplots()
@@ -59,7 +64,8 @@ try:
 			if plotFp is None:
 				plt.show()
 			else:
-				plt.savefig(plotFp)
+				plt.savefig(plotFp, bbox_inches = "tight")
+				print("Extra Features: Successfully saved the plot of the MBRs to \"{0}\". ".format(plotFp))
 		except KeyboardInterrupt:
 			print("Ploting procedures are interrupted by users. ")
 		except BaseException as e:
