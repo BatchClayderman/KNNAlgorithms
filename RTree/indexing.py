@@ -137,7 +137,7 @@ def getCoords(coordsFp:str = coordsFilepath) -> list:
 			try:
 				coords.append([float(tmp[0]), float(tmp[1])])
 			except:
-				print("Line {0} has been skipped since converting error occured. ".format(cnt))
+				print("Line {0} has been skipped since converting errors occured. ".format(cnt))
 		elif line: # it is not necessary to prompt the empty line
 			print("Line {0} has been skipped since the count of comma(s) is not 1. ".format(cnt))
 	return coords
