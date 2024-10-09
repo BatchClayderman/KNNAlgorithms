@@ -97,9 +97,9 @@ plotMBRFilepath = "plotMBR.pdf"
 
 # class #
 class RTreeNode:
-	def __init__(self:object, entries:list = [], id:int = 0, MBR:list = None):
+	def __init__(self:object, entries:list = [], identifier:int = 0, MBR:list = None):
 		self.entries = entries
-		self.id = id
+		self.id = identifier
 		self.MBR = MBR
 	def __str__(self) -> str:
 		if isinstance(self.entries[0], RTreeNode):
@@ -238,13 +238,13 @@ def interleave_latlng(lat:float, lng:float) -> int: # get code
 
 def buildRTree(entries:list, min_capacity:int = 8, max_capacity:int = 20, level:int = 0, level_indicator:int = INDICATOR, isPrint:bool = False) -> RTreeNode:
 	if isPrint:
-		print("{0} nodes at level {1}".format(len(entries), level - 1)) # last level
+		print("{0} nodes at level {1}".format(len(entries), level - 1))
 	if len(entries) <= max_capacity:
-		print("1 node at level {0}. ".format(level)) # last level
-		return RTreeNode(entries = entries, id = level * level_indicator) # root
+		print("1 node at level {0}".format(level)) # last level
+		return RTreeNode(entries = entries, identifier = level * level_indicator) # root
 	else:
 		return buildRTree(																	\
-			entries = [RTreeNode(entries = entries[i * max_capacity:(i + 1) * max_capacity], id = i + level * level_indicator) for i in range((len(entries) - 1) // max_capacity + 1)], 		\
+			entries = [RTreeNode(entries = entries[i * max_capacity:(i + 1) * max_capacity], identifier = i + level * level_indicator) for i in range((len(entries) - 1) // max_capacity + 1)], 		\
 			min_capacity = min_capacity, 															\
 			max_capacity = max_capacity, 															\
 			level = level + 1, 																\
@@ -283,7 +283,7 @@ def doBuildRTree(entries:list, min_capacity:int = 8, max_capacity:int = 20, leve
 	computeRTreeMBR(rTree)
 	return rTree
 
-def index(coords:list, offsets:list) -> list: # build index
+def index(coords:list, offsets:list) -> RTreeNode: # build index
 	entries = []
 	for offset in offsets:
 		polygon_id, start_offset, end_offset = offset
@@ -322,6 +322,7 @@ def doDumpRTree(rTree:RTreeNode, filepath:str = rTreeFilepath, encoding:str = "u
 			return False
 	else:
 		dumpRTree(rTree, fp = f)
+		return True
 
 
 
