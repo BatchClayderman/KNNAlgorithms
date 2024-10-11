@@ -1,5 +1,6 @@
 import os
 from sys import argv, exit
+from queue import Queue
 from time import sleep
 try:
 	from numpy import array
@@ -85,7 +86,8 @@ except: # it does not work in Jupyter-notebook
 EXIT_SUCCESS = 0
 EXIT_FAILURE = 1
 _DIVISORS = [180.0 / 2 ** n for n in range(32)]
-INDICATOR = 10000
+INDICATOR = 0 # 10000 # change the indicator to 10000 if you wish to make it visualized in a better way
+lowerBound = 0
 defaultTime = 5
 coordsFilepath = "coords.txt"
 offsetsFilepath = "offsets.txt"
@@ -99,13 +101,13 @@ plotMBRFilepath = "plotMBR.pdf"
 class RTreeNode:
 	def __init__(self:object, entries:list = [], identifier:int = 0, MBR:list = None):
 		self.entries = entries
-		self.id = identifier
+		self.identifier = identifier
 		self.MBR = MBR
 	def __str__(self) -> str:
 		if isinstance(self.entries[0], RTreeNode):
-			return str([1, self.id, [[entry.id, entry.MBR] for entry in self.entries]])
+			return str([1, self.identifier, [[entry.identifier, entry.MBR] for entry in self.entries]])
 		else:
-			return str([0, self.id, self.entries])
+			return str([0, self.identifier, self.entries])
 
 
 # get input #
@@ -207,7 +209,7 @@ def compute_mbr(coords:list) -> list: # find the bounds
 def compute_geometric_center(coords:list) -> list: # find the geometric center
 	return [sum(coord[0] for coord in coords) / len(coords), sum(coord[1] for coord in coords) / len(coords)] if coords else None
 
-def interleave_latlng(lat:float, lng:float) -> int: # get code
+def interleave_latlng(lat:float, lng:float) -> str: # get code
 	if not isinstance(lat, float) or not isinstance(lng, float):
 		return None
 	if lng > 180:
@@ -234,22 +236,31 @@ def interleave_latlng(lat:float, lng:float) -> int: # get code
 			x -= dx
 		morton_code += str(digit)
 	
-	return int(morton_code)
+	return morton_code
+
+def allocateId(idToBeAllocated:int) -> int:
+	global lowerBound
+	if idToBeAllocated >= lowerBound:
+		lowerBound = idToBeAllocated + 1
+		return idToBeAllocated
+	else:
+		lowerBound += 1
+		return lowerBound - 1
 
 def buildRTree(entries:list, min_capacity:int = 8, max_capacity:int = 20, level:int = 0, level_indicator:int = INDICATOR, isPrint:bool = False) -> RTreeNode:
 	if isPrint:
-		print("{0} nodes at level {1}".format(len(entries), level - 1))
+		print("{0} node{1} at level {2}".format(len(entries), ("s" if len(entries) > 1 else ""), level - 1))
 	if len(entries) <= max_capacity:
 		print("1 node at level {0}".format(level)) # last level
-		return RTreeNode(entries = entries, identifier = level * level_indicator) # root
+		return RTreeNode(entries = entries, identifier = allocateId(level * level_indicator)) # root
 	else:
-		return buildRTree(																	\
-			entries = [RTreeNode(entries = entries[i * max_capacity:(i + 1) * max_capacity], identifier = i + level * level_indicator) for i in range((len(entries) - 1) // max_capacity + 1)], 		\
-			min_capacity = min_capacity, 															\
-			max_capacity = max_capacity, 															\
-			level = level + 1, 																\
-			level_indicator = level_indicator, 														\
-			isPrint = True																\
+		return buildRTree(																		\
+			entries = [RTreeNode(entries = entries[i * max_capacity:(i + 1) * max_capacity], identifier = allocateId(i + level * level_indicator)) for i in range((len(entries) - 1) // max_capacity + 1)], 	\
+			min_capacity = min_capacity, 																\
+			max_capacity = max_capacity, 																\
+			level = level + 1, 																	\
+			level_indicator = level_indicator, 															\
+			isPrint = True																	\
 		)
 
 def computeNodeMBR(nodes:list) -> list: # find the bounds
@@ -272,8 +283,9 @@ def computeRTreeMBR(rTree:RTreeNode) -> None:
 		rTree.MBR = computeNodeMBR([entry[1] for entry in rTree.entries])
 
 def doBuildRTree(entries:list, min_capacity:int = 8, max_capacity:int = 20, level_indicator:int = INDICATOR) -> RTreeNode:
-	if type(entries) != list or len(entries) < 1:
+	if not isinstance(entries, list) or len(entries) < 1:
 		return None
+	lowerBound = 0
 	rTree = buildRTree(entries, min_capacity = min_capacity, max_capacity = max_capacity, level_indicator = level_indicator)
 	lastNode = rTree
 	while isinstance(lastNode.entries[-1], RTreeNode):
@@ -311,11 +323,29 @@ def dumpRTree(rTree:RTreeNode, fp:object = None) -> None:
 	else:
 		print(rTree)
 
-def doDumpRTree(rTree:RTreeNode, filepath:str = rTreeFilepath, encoding:str = "utf-8") -> bool:
+def doDumpRTree(rTree:RTreeNode, layerByLayer:bool = True, filepath:str = rTreeFilepath, encoding:str = "utf-8") -> bool:
 	if filepath:
 		try:
 			with open(filepath, "w", encoding = encoding) as f:
-				dumpRTree(rTree, fp = f)
+				if layerByLayer:
+					q = Queue()
+					q.put(rTree) # root
+					results = []
+					while not q.empty():
+						levelSize = q.qsize()
+						levelNodes = []
+						for i in range(levelSize):
+							node = q.get()
+							levelNodes.append("{0}\n".format(node))
+							if isinstance(node.entries[0], RTreeNode):
+								for child in node.entries:
+									q.put(child)
+						results.insert(0, levelNodes)
+					for result in results:
+						for r in result:
+							f.write(r)
+				else:
+					dumpRTree(rTree, fp = f)
 			return True
 		except Exception as e:
 			print(e)
@@ -384,7 +414,7 @@ def handleCommandline() -> dict:
 def main() -> int:
 	# get input #
 	commandlineArgument = handleCommandline()
-	if type(commandlineArgument) == bool:
+	if isinstance(commandlineArgument, bool):
 		return EXIT_SUCCESS if commandlineArgument else EXIT_FAILURE
 	coords = getCoords(commandlineArgument["coords"])
 	if coords is None:
