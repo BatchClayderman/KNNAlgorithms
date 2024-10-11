@@ -206,9 +206,6 @@ def compute_mbr(coords:list) -> list: # find the bounds
 	else:
 		return None
 
-def compute_geometric_center(coords:list) -> list: # find the geometric center
-	return [sum(coord[0] for coord in coords) / len(coords), sum(coord[1] for coord in coords) / len(coords)] if coords else None
-
 def interleave_latlng(lat:float, lng:float) -> str: # get code
 	if not isinstance(lat, float) or not isinstance(lng, float):
 		return None
@@ -301,13 +298,13 @@ def index(coords:list, offsets:list) -> RTreeNode: # build index
 		polygon_id, start_offset, end_offset = offset
 		polygon_coords = coords[start_offset:end_offset + 1]
 		mbr = compute_mbr(polygon_coords)
-		center = compute_geometric_center(polygon_coords)
+		center = [(mbr[0] + mbr[1]) / 2, (mbr[2] + mbr[3]) / 2] # [sum(coord[0] for coord in polygon_coords) / len(polygon_coords), sum(coord[1] for coord in polygon_coords) / len(polygon_coords)] if polygon_coords else None
 		if mbr is None or center is None:
 			print("Warning: illegal coords[{0}:{1}] are found. ".format(start_offset, end_offset + 1))
 		else:
 			z_order = interleave_latlng(center[1], center[0])
 			entries.append([polygon_id, mbr, z_order])
-	entries.sort(key = lambda c:c[-1])
+	entries.sort(key = lambda x:x[-1])
 	for i in range(len(entries)): # remove z-order
 		entries[i].pop()
 	return doBuildRTree(entries)
